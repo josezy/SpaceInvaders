@@ -33,6 +33,7 @@ for side in range(4):
   border_pen.lt(90)
 border_pen.hideturtle()
 
+
 # Score
 score = 0
 score_pen = turtle.Turtle()
@@ -43,6 +44,7 @@ score_pen.setposition(-290, 270)
 scoreString = "Score: %s" %score
 score_pen.write(scoreString, False, align="left", font=("Arial", 14, "normal"))
 score_pen.hideturtle()
+
 
 #Player turtle
 playa = turtle.Turtle()
@@ -55,26 +57,19 @@ playa.setheading(90)
 
 playaSpeed = 15
 
-# Enemies list
-number_of_enemies = 5
-enemies = []
-
-for i in range(number_of_enemies):
-  enemies.append(turtle.Turtle())
-
-for enemy in enemies:
-  enemy.color("Red")
-  enemy.shape("images/invader.gif")
-  enemy.penup()
-  enemy.speed(0)
-  x = random.randint(-200, 200)
-  y = random.randint(100, 250)
-  enemy.setposition(x, y)
-
-enemySpeed = 2
+# for i in range(number_of_enemies):
+#   enemy = turtle.Turtle();
+#   enemy.color("Red")
+#   enemy.shape("images/invader.gif")
+#   enemy.penup()
+#   enemy.speed(0)
+#   x = random.randint(-200, 200)
+#   y = random.randint(100, 250)
+#   enemy.setposition(x, y)
+#   enemies.append(enemy)
 
 
-# Bullet for aliens! okno
+# Fire the aliens! okno
 bullet = turtle.Turtle()
 bullet.color("yellow")
 bullet.shape("images/lazer.gif")
@@ -91,6 +86,12 @@ bulletSpeed = 20
 # ready - ready to shoot
 # fire - bullet is firing
 bulletState = "ready"
+
+
+# Enemies list
+number_of_enemies = 5
+enemySpeed = 2
+enemies = []
 
 #Moving playa left and right
 def move_left():
@@ -119,39 +120,102 @@ def fire_bullet():
     bullet.setposition(x, y)
     bullet.showturtle()
 
-def isCollision(t1, t2):
+def isCollision(t1, t2, r):
   dist = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2) + math.pow(t1.ycor()-t2.ycor(),2))
-  return True if dist < 15 else False
+  return dist < r
+
+def clearScreen():
+  global score
+  score = 0
+  scoreString = "Score: %s" %score
+  score_pen.clear()
+  score_pen.write(scoreString, False, align="left", font=("Arial", 14, "normal"))
+  score_pen.hideturtle()
+
+  # Clean aliens
+  for e in enemies:
+    e.hideturtle()
+
+level_pen = turtle.Turtle()
+def levelLabel(level):
+  level_pen.speed(0)
+  level_pen.color("white")
+  level_pen.penup()
+  level_pen.setposition(0, 270)
+  level_pen.clear()
+  scoreString = "Level %s" %level
+  level_pen.write(scoreString, False, align="center", font=("Arial", 18, "normal"))
+  level_pen.hideturtle()
+
+def prepareGame(number_of_enemies):
+  enemies = []
+  for i in range(number_of_enemies):
+    enemy = turtle.Turtle();
+    enemy.color("Red")
+    enemy.shape("images/invader.gif")
+    enemy.penup()
+    enemy.speed(0)
+    x = random.randint(-200, 200)
+    y = random.randint(100, 250)
+    enemy.setposition(x, y)
+    enemies.append(enemy)
+  return enemies
+
+def next_level():
+  global enemies
+  clearScreen()
+  enemies = []
+
 
 #Keyboard bindings
 wn.listen()
 wn.onkeypress(move_left, "Left")
 wn.onkeypress(move_right, "Right")
 wn.onkeypress(fire_bullet, "space")
+wn.onkeypress(next_level, "x")
+
+game_state = "alive"
+level = 0
+enemies_per_level = [5, 7, 9, 12]
 
 #Main loop
 while True:
+  if game_state == "dead":
+    clearScreen()
+    print("Game Over")
+    break
 
-  for enemy in enemies:
+  if not enemies:
+    level += 1
+    number_of_enemies = enemies_per_level[level - 1]
+    enemies = prepareGame(number_of_enemies)
+    levelLabel(level)
+
+  for idx, enemy in enumerate(enemies):
     # Move the enemy
     x = enemy.xcor()
     if x > 280 or x < -280:
       for e in enemies:
         e.sety(e.ycor() - 40)
+        if e.ycor() < -260:
+          game_state = "dead"
       enemySpeed *= -1
     x += enemySpeed
     enemy.setx(x)
 
     # Check for collisions
-    if isCollision(bullet, enemy):
+    if isCollision(bullet, enemy, 15):
       # Reset bullet
       bullet.hideturtle()
       bulletState = "ready"
       bullet.setposition(0, -400)
       # Reset enemy
-      x = random.randint(-200, 200)
-      y = random.randint(100, 250)
-      enemy.setposition(x, y)
+      # x = random.randint(-200, 200)
+      # y = random.randint(100, 250)
+      # enemy.setposition(x, y)
+      # Hide enemy
+      enemy.hideturtle()
+      enemies.pop(idx)
       # Update score
       score += 10
       scoreString = "Score: %s" %score
@@ -160,10 +224,10 @@ while True:
       # Play sound
       winsound.PlaySound("sounds/explosion.wav", winsound.SND_ASYNC)
 
-    if isCollision(playa, enemy):
+    if isCollision(playa, enemy, 30):
       playa.hideturtle()
       enemy.hideturtle()
-      print("Game Over")
+      game_state = "dead"
       break
 
   # Move the bullet
