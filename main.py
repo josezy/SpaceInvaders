@@ -5,7 +5,7 @@ import turtle
 import os
 import math
 import random
-import winsound
+# import winsound
 
 #Setup screen
 wn = turtle.Screen()
@@ -111,7 +111,7 @@ def fire_bullet():
   
   if bulletState == "ready":
     # Play sound
-    winsound.PlaySound("sounds/laser.wav", winsound.SND_ASYNC)
+    # winsound.PlaySound("sounds/laser.wav", winsound.SND_ASYNC)
     # Update state
     bulletState = "fire"
     # Move bullet above player
@@ -222,7 +222,7 @@ while True:
       score_pen.clear()
       score_pen.write(scoreString, False, align="left", font=("Arial", 14, "normal"))
       # Play sound
-      winsound.PlaySound("sounds/explosion.wav", winsound.SND_ASYNC)
+      # winsound.PlaySound("sounds/explosion.wav", winsound.SND_ASYNC)
 
     if isCollision(playa, enemy, 30):
       playa.hideturtle()
