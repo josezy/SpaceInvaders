@@ -8,3 +8,5 @@ Only works on Windows
 
 Cheats:
 -hit x to reach next level (only 4 levels)
+
+![](D59871585535469EAEEA5D4EDEEA9A95.png)
